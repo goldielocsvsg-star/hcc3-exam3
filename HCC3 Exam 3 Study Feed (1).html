@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HCC3 Exam 3 Study Feed</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;800&family=Figtree:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0b14;--tx:#fff;--mut:rgba(255,255,255,.72);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;background:var(--bg);color:var(--tx);font-family:Figtree,system-ui,sans-serif;overflow:hidden}
+#feed{height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;overscroll-behavior:contain}
+#feed::-webkit-scrollbar{display:none}
+.card{height:100%;scroll-snap-align:start;scroll-snap-stop:always;position:relative;display:flex;align-items:center;justify-content:center;padding:84px 74px 40px 22px;background:linear-gradient(160deg,var(--c1),var(--c2));cursor:pointer}
+.in{width:100%;max-width:560px;max-height:100%;overflow-y:auto;scrollbar-width:none}
+.tag{display:inline-block;background:rgba(0,0,0,.28);padding:5px 12px;border-radius:99px;font-size:13px;font-weight:600;margin-bottom:14px}
+h2{font-family:"Bricolage Grotesque",Figtree,sans-serif;font-weight:800;font-size:clamp(28px,6.5vw,46px);line-height:1.05;margin-bottom:16px;letter-spacing:-.02em}
+li{list-style:none;font-size:clamp(16px,3.9vw,20px);line-height:1.38;margin:0 0 10px;padding-left:16px;position:relative;color:#fff}
+li::before{content:"";position:absolute;left:0;top:.6em;width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.75)}
+.q{font-family:"Bricolage Grotesque",sans-serif;font-weight:500;font-size:clamp(22px,5.4vw,32px);line-height:1.2;margin-bottom:18px}
+.a{background:rgba(0,0,0,.34);border-radius:18px;padding:16px 18px;font-size:clamp(16px,4vw,20px);line-height:1.4;opacity:0;transform:translateY(8px);transition:.25s}
+.card.rev .a{opacity:1;transform:none}
+.hint{font-size:14px;color:var(--mut);margin-top:14px}
+.card.rev .hint{display:none}
+.rail{position:absolute;right:12px;bottom:12%;display:flex;flex-direction:column;gap:18px;align-items:center}
+.rail button{background:rgba(0,0,0,.3);border:0;color:#fff;width:48px;height:48px;border-radius:50%;font-size:22px;cursor:pointer}
+.rail button.on{background:#fff;color:#e11d48}
+.rail small{display:block;font-size:12px;text-align:center;margin-top:3px}
+#top{position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);z-index:5;padding:10px 12px 0;background:linear-gradient(rgba(0,0,0,.5),transparent)}
+#bar{height:3px;background:rgba(255,255,255,.25);border-radius:3px;overflow:hidden;margin-bottom:10px}
+#bar i{display:block;height:100%;width:0;background:#fff;transition:width .2s}
+#chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:6px}
+#chips button{flex:none;border:0;border-radius:99px;padding:7px 14px;font:600 14px Figtree,sans-serif;background:rgba(255,255,255,.18);color:#fff;cursor:pointer}
+#chips button.on{background:#fff;color:#111}
+button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.a{transition:none}#bar i{transition:none}}
+</style></head><body>
+<div id="top"><div id="bar"><i></i></div><div id="chips"></div></div>
+<div id="feed" tabindex="0"></div>
+<script>
+const C={STI:["#be185d","#7c2d12"],Contraception:["#7c3aed","#1e3a8a"],Prenatal:["#0d9488","#1e40af"],Testing:["#0284c7","#4338ca"],"High-risk":["#b91c1c","#581c87"],Meds:["#15803d","#0f4c5c"],Quiz:["#c2410c","#9d174d"]};
+// [cat,title,bullets] or [cat,"",null,question,answer]
+const D=[
+["STI","Chlamydia & gonorrhea",["Chlamydia: often silent. Dysuria, discharge, pelvic pain.","Chlamydia tx: doxycycline (nonpregnant), azithromycin (pregnant). Treat partners, retest ~3 months.","Gonorrhea: purulent discharge, dysuria, pelvic pain, may be silent. Tx: IM ceftriaxone, add chlamydia coverage if not excluded.","Abstain until the 7-day regimen is done (or 7 days after a single dose) AND partners are treated."]],
+["STI","Syphilis",["Primary: painless chancre.","Secondary: palm and sole rash.","Late: systemic damage.","Penicillin G, regimen by stage. Required in pregnancy: desensitize if allergic."]],
+["STI","HSV, HPV & trich",["HSV: painful vesicles/ulcers, recurs. Acyclovir/valacyclovir control outbreaks, don’t cure. Avoid sex with lesions.","HPV: often silent, warts or cervical changes. Vaccine + cervical screening. Defer vaccine in pregnancy.","Trichomoniasis: frothy discharge, odor, strawberry cervix. Oral metronidazole, treat partners.","Condoms reduce but don’t eliminate HPV/HSV spread."]],
+["STI","HIV, hep B & PID",["HIV: flu-like illness or silent. ART; condoms, PrEP/PEP, testing.","Hep B: often silent, maybe jaundice. Vaccinate; evaluate chronic infection for antivirals.","PID: pelvic pain, cervical motion tenderness, fever. Ceftriaxone + doxycycline + metronidazole.","Untreated chlamydia/gonorrhea → PID, infertility, ectopic pregnancy."]],
+["STI","Prevention levels & precautions",["Primary: prevent infection. Condoms, HPV/HBV vaccines, PrEP, education.","Secondary: detect early. STI/HIV and pregnancy screening.","Tertiary: treat and limit complications. Antibiotics, partner services, HIV care.","Standard precautions: hand hygiene for all; gloves for body fluids/mucosa/nonintact skin; gown/mask/eye protection by risk. HIV and hep B do NOT need airborne isolation.","Risk factors: inconsistent condoms, new/multiple partners, prior STI, substance use, coercion."]],
+["Quiz","",null,"Which medication treats uncomplicated gonorrhea?","Ceftriaxone IM. First-line therapy."],
+["Quiz","",null,"Which contraceptive helps prevent STIs?","Condom. IUDs and hormones don’t protect against STIs."],
+["Contraception","Methods cheat sheet",["Pill/patch/ring: estrogen + progestin, adherence needed.","Progestin-only pill: no estrogen, timing rules vary.","Depo-Provera: shot ~every 13 weeks. Irregular bleeding, delayed fertility, bone density.","Hormonal IUD: long-acting, lighter periods. Copper IUD: no hormones, more cramps/bleeding, works as emergency contraception.","Implant: long-acting progestin, irregular bleeding.","Diaphragm: barrier + spermicide, fit matters. Sterilization: permanent, informed consent."]],
+["Contraception","Combined hormonal: don’t use if…",["Migraine with aura","Severe HTN (160/100 or higher)","High-risk VTE / thrombophilia","Current breast cancer, certain liver disease","Early postpartum","Smoker age 35+ (especially 15+ cigarettes/day)"]],
+["Contraception","Interactions",["Reduce effectiveness: St. John’s wort, phenytoin and other enzyme-inducing anticonvulsants, rifampin/rifabutin.","Routine antibiotics (amoxicillin, azithromycin, doxycycline) do NOT.","Severe vomiting/diarrhea can interfere with oral pills."]],
+["Contraception","Emergency contraception",["Levonorgestrel: ASAP, best within 72 h, benefit up to 120 h.","Ulipristal: up to 120 h. Wait at least 5 days before starting/resuming hormonal contraception; use backup.","Copper IUD: within ~5 days.","Prevents pregnancy; does not end an established one; no STI protection."]],
+["Quiz","",null,"St. John’s wort + combined oral contraceptive: what’s the risk?","Reduced contraceptive effectiveness. Enzyme induction lowers hormone exposure."],
+["Prenatal","Normal adaptations",["Cardiovascular: blood volume up ~40–50%, higher cardiac output, dilutional anemia. Avoid lying flat on back.","Respiratory: more tidal volume; mild breathlessness OK, severe dyspnea is NOT.","Renal: GFR up, frequency. Assess for UTI.","GI: nausea, reflux, constipation. Small meals, fluids, fiber.","MSK: lordosis, loose ligaments → fall prevention.","Hematologic: hypercoagulable → VTE risk. Endocrine: rising insulin resistance."]],
+["Prenatal","Supine hypotensive syndrome",["Big uterus compresses the inferior vena cava and drops venous return.","Dizzy or hypotensive? Turn her laterally, often left."]],
+["Prenatal","Signs of pregnancy",["Presumptive (subjective): amenorrhea, nausea, fatigue, breast tenderness, frequency, quickening.","Probable (objective, not definitive): positive hCG, Goodell (soft cervix), Chadwick (bluish cervix), Hegar (soft lower uterus), ballottement, uterine enlargement.","Positive (confirmatory): ultrasound embryo/fetus or cardiac activity; fetal movement palpated by trained examiner."]],
+["Prenatal","GPTPAL",["G: total pregnancies including current.","T: births at 37+ weeks. P: births 20 to 36w6d.","A: losses before 20 weeks. L: living children.","Twins = ONE delivery event, TWO living children.","Current + 10-wk miscarriage + twins at 34 wk + singleton at 39 wk, all living = G4 T1 P1 A1 L3."]],
+["Prenatal","Nägele’s rule",["First day of LMP + 7 days − 3 months + 1 year.","LMP Jan 10, 2026 → EDD Oct 17, 2026.","Assumes 28-day cycle; early ultrasound may refine dating."]],
+["Quiz","",null,"Current pregnancy, 9-wk miscarriage, 35-wk twins, 39-wk singleton, 3 living. GPTPAL?","G4 T1 P1 A1 L3. Twins count once for preterm, twice for living."],
+["Quiz","",null,"Which is a POSITIVE sign of pregnancy?","Fetal cardiac activity seen on ultrasound."],
+["Testing","Kick counts & ultrasound",["Kick counts: start ~28 weeks per provider. 10 movements in 2 hours. Decreased/absent movement → prompt assessment.","Ultrasound: confirms intrauterine pregnancy, dates, anatomy, growth, placenta, fluid. No ionizing radiation."]],
+["Testing","Biophysical profile",["5 parts: NST, breathing, movement, tone, fluid. Each scored 0 or 2.","8–10 reassuring if fluid adequate. 6 equivocal. 4 or less abnormal.","Breathing ≥1 episode of 30 sec; ≥3 gross movements; ≥1 tone episode; deepest pocket ≥2 cm.","Low fluid warrants attention regardless of total score."]],
+["Testing","NST vs CST",["NST at ≥32 wk reactive: ≥2 accels ≥15 bpm for ≥15 sec in 20 min. (10x10 before 32 wk.) Lateral or semi-Fowler, 20–40 min.","CST negative: no late decels with adequate contractions. Positive: late decels with at least half of contractions.","Late decels on oxytocin CST: stop oxytocin, reposition, assess BP, notify provider."]],
+["Testing","Amnio vs CVS",["Amnio: ultrasound-guided fluid sample. Consent, monitor mom/baby. Watch leaking fluid, bleeding, contractions, infection. RhIG if indicated.","CVS: placental tissue, ~10–13 wk. Does NOT directly assess open neural tube defects. Watch bleeding/cramping/leakage."]],
+["Quiz","",null,"BPP score of 4/10. Action?","Prompt provider notification and evaluation. Abnormal result."],
+["Quiz","",null,"Late decelerations during an oxytocin CST?","Stop oxytocin, reposition, assess, notify provider. Suggests uteroplacental insufficiency."],
+["High-risk","Diabetes in pregnancy",["Pregestational: existed before. Risks: anomalies, preeclampsia, macrosomia, neonatal hypoglycemia.","Gestational: first found in pregnancy. Risks: macrosomia, shoulder dystocia, preeclampsia. Screen 24–28 wk. Postpartum OGTT 4–12 weeks.","Targets: fasting <95; 1-hr <140; 2-hr <120.","Conscious low sugar: 15 g fast carbs, recheck in 15 min. Can’t swallow: IV dextrose or glucagon. NEVER oral glucose to an unconscious patient."]],
+["High-risk","Chronic HTN",["Before pregnancy or before 20 weeks. Risks: superimposed preeclampsia, abruption, growth restriction, stroke.","Safe: labetalol, extended-release nifedipine, methyldopa.","Avoid lisinopril/ACE inhibitors and ARBs.","Low-dose aspirin (often 81 mg) for qualifying patients, start 12–28 wk, ideally before 16."]],
+["High-risk","Preeclampsia",["New HTN after 20 wk (≥140/90) + proteinuria (≥300 mg/24 h or P/C ≥0.3) OR end-organ findings.","Severe range: ≥160 systolic OR ≥110 diastolic.","Severe features: low platelets, kidney/liver dysfunction, pulmonary edema, persistent headache, visual symptoms.","Edema alone is NOT diagnostic.","Care: BP, neuro, DTRs/clonus, urine output, labs, fetal status, seizure precautions, antihypertensives, magnesium. Avoid excess IV fluids; no diuretics for dependent edema."]],
+["High-risk","Eclamptic seizure",["Seizure + preeclampsia.","During: call for help, protect from injury, lateral position, airway, record it, assess oxygenation.","DO NOT restrain. DO NOT put anything in her mouth.","After: stabilize mom, assess fetus, magnesium as ordered, prep for delivery if indicated."]],
+["High-risk","Magnesium sulfate",["Prevents/treats seizures. NOT the main antihypertensive.","Monitor RR, DTRs, urine output, level of consciousness.","Toxicity: absent reflexes, respiratory depression, cardiac effects.","Toxic? STOP infusion, call for help, support airway. Antidote: IV calcium gluconate."]],
+["Quiz","",null,"On magnesium: absent reflexes, RR 9. Priority?","Stop magnesium, emergency assessment, prepare calcium gluconate."],
+["Quiz","",null,"32 wk, BP 168/112, headache, blurred vision, RUQ pain. Priority?","Immediate provider notification and severe-preeclampsia precautions."],
+["High-risk","Hyperemesis & cerclage",["Hyperemesis: severe vomiting, dehydration, weight loss, electrolyte problems. Isotonic IV fluids, ondansetron/promethazine, advance diet.","Prolonged vomiting/malnutrition: THIAMINE before dextrose (prevents Wernicke).","Cervical insufficiency: painless 2nd-trimester dilation. Cerclage = cervical stitch, removed ~36–37 wk.","Report contractions, pelvic pressure, bleeding, leaking fluid, fever, foul discharge."]],
+["High-risk","Miscarriage types",["Threatened: bleeding, cervix closed.","Inevitable: bleeding/cramping + dilated cervix.","Incomplete: some products retained. Complete: all expelled.","Missed: demise without expulsion. Septic: infected.","Check bleeding, vitals, Hgb, infection, Rh status/RhIG. Heavy bleeding, syncope, hypotension, fever = emergency."]],
+["High-risk","Ectopic pregnancy",["Implants outside uterus, usually tube. Risks: prior ectopic, PID, tubal surgery, smoking.","Missed period, unilateral pain, spotting.","Shoulder pain, syncope, hypotension = rupture and internal bleeding.","ABCs, IV access, vitals, blood prep, urgent surgery eval.","Stable? Methotrexate + serial hCG. Avoid alcohol and folic acid unless directed."]],
+["High-risk","Previa vs abruption",["Previa: painless, bright red, soft nontender uterus, dx by ultrasound. NO digital vaginal exam until excluded.","Abruption: often painful, may be concealed, tender rigid hypertonic uterus, dx mostly clinical. Treat hemorrhage, watch fetus, prep urgent care."]],
+["High-risk","HELLP & DIC",["HELLP: Hemolysis, Elevated Liver enzymes, Low Platelets. RUQ/epigastric pain, nausea, headache. Magnesium when indicated, deliver after stabilizing.","DIC: clotting consumes platelets and factors, then bleeding. Follows abruption, sepsis, hemorrhage.","DIC clues: oozing IV sites, low platelets/fibrinogen, long PT/aPTT, high D-dimer.","Treat the cause, watch shock/urine output, ordered blood products, avoid unnecessary invasive procedures."]],
+["Quiz","",null,"Painless bright-red third-trimester bleeding?","Placenta previa. No digital vaginal exam."],
+["Quiz","",null,"Positive pregnancy test, unilateral pain, shoulder pain, hypotension?","Ruptured ectopic pregnancy. Emergency."],
+["Quiz","",null,"RUQ pain, low platelets, high AST/ALT?","HELLP syndrome."],
+["Quiz","",null,"Abruption patient oozing from IV sites?","Suspect DIC. Consumption coagulopathy."],
+["Quiz","",null,"Prolonged vomiting and malnutrition: what before IV dextrose?","Thiamine, to prevent Wernicke encephalopathy."],
+["Meds","Antibiotics",["Azithromycin: chlamydia in pregnancy; GI effects, QT risk.","Ceftriaxone: gonorrhea; check severe beta-lactam allergy.","Doxycycline: chlamydia/PID; avoid in pregnancy; photosensitivity.","Penicillin G: syphilis, essential in pregnancy.","Metronidazole: trich, BV, PID.","Ampicillin: GBS prophylaxis. Vancomycin: selected GBS prophylaxis; monitor kidneys."]],
+["Meds","BP & seizure meds",["Lisinopril: contraindicated in pregnancy.","Hydralazine: acute severe HTN. Watch hypotension, tachycardia.","Methyldopa: pregnancy HTN; sedation, mood, liver effects.","Propranolol: monitor HR/BP; masks hypoglycemia.","Magnesium sulfate: seizures. Calcium gluconate: antidote.","Lorazepam: selected seizures, NOT first-line eclampsia. Phenytoin: antiseizure, lowers hormonal contraceptive efficacy."]],
+["Meds","Rh, lungs & vitamins",["RhIG: ~28 wk to eligible unsensitized Rh-negative patients, within 72 h after Rh-positive birth, and after sensitizing events. Does NOT reverse established sensitization.","Betamethasone: fetal lung maturity (watch maternal glucose). Doesn’t stop labor.","Folic acid 400–800 mcg/day prevents neural tube defects.","Prenatal vitamins: folate, iron, iodine. Avoid excess preformed vitamin A."]],
+["Meds","Everything else",["Insulin: needs change in pregnancy. Metformin: selected T2/GDM; crosses placenta.","Glucagon: severe hypoglycemia, protect airway. Dextrose: thiamine first if malnourished.","IV normal saline: avoid overload in preeclampsia.","Ondansetron: constipation, QT. Promethazine: sedation, hypotension, tissue injury with injection.","Heparin: VTE, monitor bleeding/platelets. Aspirin: low-dose preeclampsia prevention.","Depo-Provera ~13 wk: bone, bleeding, fertility effects."]],
+["Quiz","",null,"Contraindicated in pregnancy: methyldopa, lisinopril, or hydralazine?","Lisinopril. ACE inhibitors can injure the fetus."],
+["Quiz","",null,"Does RhIG reverse established sensitization?","No. It only prevents sensitization in eligible unsensitized Rh-negative patients."],
+["Quiz","Last one",null,"Rapid fire: painless bleeding / painful rigid uterus / RUQ + low platelets / oozing IVs / seizure + preeclampsia / absent DTRs on Mg?","Previa / abruption / HELLP / DIC / eclampsia / magnesium toxicity. Also: reduced fetal movement = prompt fetal assessment. You’re done. Scroll back up to review."]
+];
+const feed=document.getElementById("feed"),chips=document.getElementById("chips"),bar=document.querySelector("#bar i");
+const saved=new Set();let cat="All";
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;")}
+function render(){
+  feed.innerHTML="";
+  const list=D.map((d,i)=>[d,i]).filter(([d])=>cat==="All"||d[0]===cat||(cat==="Saved"&&0));
+  const items=cat==="Saved"?D.map((d,i)=>[d,i]).filter(([,i])=>saved.has(i)):list;
+  if(!items.length){feed.innerHTML='<div class="card" style="--c1:#312e81;--c2:#0f0b14"><div class="in"><h2>Nothing saved yet</h2><p class="hint">Tap the heart on a card to save it, then come back here.</p></div></div>';bar.style.width="0";return}
+  items.forEach(([d,i])=>{
+    const [c,t,b,q,a]=d,k=C[c];
+    const el=document.createElement("section");el.className="card";el.style.setProperty("--c1",k[0]);el.style.setProperty("--c2",k[1]);
+    el.innerHTML='<div class="in"><span class="tag">'+(c==="Quiz"?"Quick quiz":c)+'</span>'+
+      (b?'<h2>'+esc(t)+'</h2><ul>'+b.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul>'
+        :'<div class="q">'+esc(q)+'</div><div class="a">'+esc(a)+'</div><p class="hint">Think first, then tap to reveal.</p>')+'</div>'+
+      '<div class="rail"><div><button aria-label="Save card" class="'+(saved.has(i)?"on":"")+'">♥</button></div></div>';
+    el.onclick=e=>{if(e.target.closest(".rail"))return;if(!b)el.classList.toggle("rev")};
+    el.querySelector("button").onclick=e=>{const on=saved.has(i);on?saved.delete(i):saved.add(i);e.currentTarget.classList.toggle("on",!on);upd()};
+    feed.appendChild(el);
+  });
+  feed.scrollTop=0;prog();
+}
+function prog(){const n=feed.children.length;const i=Math.round(feed.scrollTop/feed.clientHeight);bar.style.width=((i+1)/n*100)+"%"}
+feed.addEventListener("scroll",prog,{passive:true});
+function upd(){chips.querySelector("[data-c=Saved]").textContent="♥ Saved ("+saved.size+")"}
+["All",...Object.keys(C).filter(x=>x!=="Quiz"),"Quiz","Saved"].forEach(c=>{
+  const b=document.createElement("button");b.dataset.c=c;b.textContent=c==="Saved"?"♥ Saved (0)":c;if(c==="All")b.className="on";
+  b.onclick=()=>{cat=c;[...chips.children].forEach(x=>x.classList.toggle("on",x===b));render()};chips.appendChild(b);
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowDown"||e.key==="j"){feed.scrollBy({top:feed.clientHeight,behavior:"smooth"});e.preventDefault()}
+  if(e.key==="ArrowUp"||e.key==="k"){feed.scrollBy({top:-feed.clientHeight,behavior:"smooth"});e.preventDefault()}
+  if(e.key===" "||e.key==="Enter"){const i=Math.round(feed.scrollTop/feed.clientHeight);const c=feed.children[i];if(c&&c.querySelector(".a")){c.classList.toggle("rev");e.preventDefault()}}
+});
+render();
+</script></body></html>
